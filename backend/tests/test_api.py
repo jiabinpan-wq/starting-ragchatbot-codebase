@@ -1,5 +1,6 @@
 """4. FastAPI endpoints: request validation, response shape, error handling (RAGSystem mocked)."""
 
+import pytest
 from conftest import INDEX_TITLE, MCP
 
 # --- POST /api/query ----------------------------------------------------------
@@ -62,6 +63,15 @@ def test_query_non_json_body_is_rejected(client, mock_rag):
     )
 
     assert resp.status_code == 422
+    mock_rag.query.assert_not_called()
+
+
+@pytest.mark.parametrize("query", ["", "   ", "\n\t "])
+def test_query_empty_or_whitespace_returns_400(client, mock_rag, query):
+    resp = client.post("/api/query", json={"query": query})
+
+    assert resp.status_code == 400
+    assert resp.json() == {"detail": "Query must not be empty"}
     mock_rag.query.assert_not_called()
 
 

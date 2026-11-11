@@ -94,6 +94,9 @@ def create_test_app(rag, static_dir) -> FastAPI:
 
     @app.post("/api/query", response_model=QueryResponse)
     async def query_documents(request: QueryRequest):
+        if not request.query.strip():
+            raise HTTPException(status_code=400, detail="Query must not be empty")
+
         try:
             session_id = request.session_id
             if not session_id:
